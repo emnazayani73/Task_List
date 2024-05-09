@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Task.css";
+import { Link, useNavigate } from "react-router-dom";
 
 function Task(props) {
   console.log(props);
@@ -20,6 +21,14 @@ function Task(props) {
     props.updateTask(task);
     setToggle(true);
   }
+  const navigate = useNavigate();
+
+  const handleLink = () => {
+    if (props.duration > 100) {
+      navigate(props._id);
+    }
+  };
+
   return (
     <div
       className={`task ${props.duration <= 60 ? "custom-task" : ""}`}
@@ -27,7 +36,11 @@ function Task(props) {
     >
       {toggle ? (
         <>
-          <div className="title">{props.title}</div>
+          {/* <Link to={`/tasks/${props._id}`}> */}
+          <div className="title" onClick={handleLink}>
+            {props.title}
+          </div>
+          {/* </Link> */}
           <div className="title">{props.duration}</div>
           {props.details && (
             <div className="title">{props.details.difficulty}</div>

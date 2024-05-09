@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./TaskForm.css";
 
 function TaskForm(props) {
@@ -15,6 +15,9 @@ function TaskForm(props) {
     props.addTask(title, duration);
   }
 
+  useEffect(() => {
+    document.title = title;
+  });
   return (
     <div className="taskForm">
       <form action="" className="form">

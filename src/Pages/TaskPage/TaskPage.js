@@ -1,28 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TaskForm from "../../components/taskForm/TaskForm";
 import TaskList from "../../components/TaskList/TaskList";
 
+import * as api from "../../services/tasks.services";
+
 function TaskPage() {
   const steps = ["step1", "step2"];
-  const loading = false;
+
   //const taskList = ["task1", "task1", "task3"];
-  const [tasks, setTasks] = useState([
-    {
-      _id: "1",
-      title: "learn html",
-      duration: "60",
-    },
-    {
-      _id: "2",
-      title: "learn JS",
-      duration: "80",
-    },
-    {
-      _id: "3",
-      title: "learn React",
-      duration: "60",
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
   /*function SayHello(value) {
     alert("hello" + value);
   }*/
@@ -30,13 +19,75 @@ function TaskPage() {
   function handleVisibility(p) {
     setIsVisible(!isVisible);
   }
-  function addTask(title, duration) {
-    console.log("title", "duration:", title, duration);
-    const newTask = {
-      _id: tasks.length + 1 + "",
-      title: title,
-      duration: duration,
+
+  // deuxieme forme
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(false);
+        const tasks = await api.fetchTasks();
+        setTasks(tasks);
+        setLoading(false);
+      } catch (e) {
+        setError(true);
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const [searchValue, setSearchValue] = useState("");
+
+  // 3ème forme de useEffect
+  /*useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      if (searchValue.length === 0) {
+        console.log("tasks empty");
+        setTasks([]);
+        setLoading(false);
+      } else {
+        const result = await api.fetchTasksByFilter(searchValue);
+        console.log("tasks form api : " + searchValue);
+        setTasks(result);
+        setLoading(false);
+      }
     };
+    console.log("searchValue", searchValue);
+    fetchData();
+  }, [searchValue]);*/
+
+  // 4ème forme de useEffect
+  // useEffect(() => {
+  //   let didCancel = false
+  //   const fetchData = async () => {
+  //     setLoading(true)
+  //     if (!searchValue) {
+  //       setTasks([])
+  //       setLoading(false)
+  //     } else {
+  //       const result = await api.fetchTasksByFilter(searchValue)
+  //       if (!didCancel) {
+  //         console.log("result: ", searchValue)
+
+  //         setTasks(result)
+  //         setLoading(false)
+  //       }
+  //     }
+  //   }
+  //   // console.log("useEffect:", searchValue)
+  //   fetchData()
+
+  //   return () => {
+  //     console.log("cleanup: ", searchValue)
+  //     didCancel = true
+  //   }
+  // }, [searchValue])
+
+  async function addTask(title, duration) {
+    const newTask = await api.addTask({ title, duration });
 
     //const newTask={_id:tasks.length +"",title ,duration}
     //setTasks(tasks.concat(newTask)) c comme setTasks
@@ -84,6 +135,14 @@ function TaskPage() {
       </button>
 
       <TaskForm addTask={addTask} /*SayHello={SayHello}*/ />
+      <input
+        type="text"
+        name="title"
+        value={searchValue}
+        onChange={(e) => {
+          setSearchValue(e.target.value);
+        }}
+      />
       {/*{loading ? (
         <div>loading...</div>
       ) : (
@@ -94,6 +153,7 @@ function TaskPage() {
         </>
       )}*/}
       {loading && <div>loading..</div>}
+      {error && <div>OMG error..</div>}
       {!loading && isVisible && (
         <TaskList
           tasks={tasks}
